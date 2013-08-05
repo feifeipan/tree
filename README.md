@@ -38,6 +38,6 @@ A tree build of doms and canvas
 
 展示
 ===
-![Tree](https://github.com/feifeipan/tree/blob/master/1.png)
-![Search Tree Nodes](https://github.com/feifeipan/tree/blob/master/2.png)
+![Tree](https://raw.github.com/feifeipan/tree/master/1.png)
+![Search Tree Nodes](https://raw.github.com/feifeipan/tree/master/2.png)
 
