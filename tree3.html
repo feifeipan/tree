@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TreeTreeTree! It's a TREE</title>
+<link rel="stylesheet" href="istyle.30626.css">
+</head>
+<style>
+	.row div{
+		text-align:center;
+	}
+	.row input{
+		display:block;
+		margin-top:40px;
+	}
+	.gap{
+		float: left;
+		min-height: 1px;
+	}
+
+	.gap input{
+		display:block;
+		margin-top:50px;
+	}
+</style>
+<body>
+<div style="position:relative;">
+	<canvas id="myCanvas" width="1600" height="900" style="border:1px solid #d3d3d3;position:absolute;top:0;left:0;"></canvas>
+	<div id="searchContainer" style="position:absolute;right:0;top:0;height:50px;z-index:99;display:none;">
+		<div class="input-append">
+			<input id="searchbox" type="text" placeholder="输入搜索内容" />
+			<!-- <button class="btn btn-primary btn-inverse" type="button">Search</button> -->
+			<button class="btn" type="button" id="searchCloseBtn">X</button>
+		</div>
+	</div>
+	<div id="main" style="position:absolute;padding-left:10px;top:0;left:0;"></div>
+</div>
+
+
+ 
+<script src="jquery-1.9.1.min.js"></script>
+<script src="istyle.30626.js"></script>
+<script>
+	/***** version 3.0 (multi trees)********/
+	var data = [
+		"appid1-RTb@appid2-RTe@appid3-RTd@appid5-RTf@appid11-RTqappid11-RTqappid11-RTq",
+		"appid1-RTb@appid2.1-RTc@appid4-RTd@appid5-RTg@appid7-RTi@appid11-RTq",
+		"appid1-RTb@appid2.1-RTc@appid5-RTg@appid6-RTh@appid11-RTq",
+		"appid1-RTb@appid2.1-RTc@appid5-RTg@appid7-RTi",
+		"appid1-RTb@appid3-RTc@appid8-RTm@appid9-RTn@appid10-RTk@appid13-RTq",
+		"appid21-RTb1@appid22-RTe@appid31-RTd@appid51-RTf@appid111-RTq"
+	];
+
+	 function canvas_arrow(context, fromx, fromy, tox, toy){
+		var headlen = 10;   // length of head in pixels
+		var angle = Math.atan2(toy-fromy,tox-fromx);
+		context.moveTo(fromx, fromy);
+		context.lineTo(tox, toy);
+		context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+		context.moveTo(tox, toy);
+		context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+	}
+
+	var forest = forest || {};
+	forest.pageInfo = {
+		width: $(document).width(),
+		height: $(document).height()
+	}
+
+	forest.init = function(){
+		this.lastKey = "";
+		this.lastDom = [];
+		this.nodeIdHash = {};
+		var c=document.getElementById("myCanvas");
+		c.height = forest.pageInfo["height"];
+		c.width = forest.pageInfo["width"];
+		this.ctx=c.getContext("2d");
+		this.ctx.strokeStyle = '#ccc';
+		this.ctx.lineWidth = 2;
+		
+		this.idSpliter = "_";
+
+		this.trees = [];
+
+		//analyse each tree
+		this.treeData = {};
+		var key = "";
+		for(var i=0,l=data.length; i<l; i++){
+			key = data[i].split("@")[0];
+			if(typeof this.treeData[key] != "undefined"){
+				this.treeData[key].push(data[i]);
+			}else{
+				this.treeData[key]=[data[i]];
+			}
+		}
+
+		var index = 0;
+		for(var i in this.treeData){
+			var d = this.treeData[i];
+			var mytree = new tree(d, index);
+			this.trees.push(mytree);
+			index++;
+		}
+
+		this.bindEvent()
+	}
+
+	forest.search = function(key){
+		for(var i=0,l=this.lastDom.length; i<l; i++){
+			this.lastDom[i].className = this.lastDom[i].className.replace("btn-primary", "btn-success");
+		}
+		this.lastDom = [];
+		if(key == ""){
+			return false;
+		}
+		var collection = $("#main input");
+		for(var i=0,l=collection.length; i<l; i++){
+			if(collection[i].value.indexOf(key) != -1){
+				collection[i].className = collection[i].className.replace("btn-success","btn-primary");
+				this.lastDom.push(collection[i]);
+			}
+		}
+	}
+
+	forest.bindEvent = function(){
+		document.getElementById("main").onclick = function(e){
+			var e = window.event || e;
+			var el = e.target || e.srcElement;
+			if(el.tagName == "INPUT"){
+				var data = -1;
+				for(var key in forest.nodeIdHash){
+					if(forest.nodeIdHash[key] == el.id){
+						data = key;
+					}
+				}
+				if(data != -1){
+					var tempArr = data.split(forest.idSpliter);
+					alert("group:"+tempArr[0] +";relations:"+tempArr[1].replace("-", "-->"));
+
+
+				}
+			}
+		}
+
+		//find 
+		window.addEventListener("keydown",function (e) {
+		    if (e.ctrlKey && e.keyCode == 70) { 
+			e.preventDefault();
+			// $("#searchContainer").css("display","block");
+			$("#searchContainer").slideDown();
+			$("#searchbox").focus();
+
+			setInterval(function(){
+				var key = $("#searchbox").val();
+				if(key == this.lastKey){return false;}
+				this.lastKey = key;
+				forest.search(key);
+			},100);
+		    }
+		});
+
+		$("#searchbox").keydown(function(e){
+			if(e.which == 13){
+				
+			}
+		});
+		$("#searchCloseBtn").click(function(){
+			$("#searchContainer").slideUp();
+		})
+		
+	}
+
+	var tree = function(data, group){
+		this.treeData = data;
+		this.group = group;
+		this.maxLevel = 0;
+		this.nodes = {};
+		this.init();
+	}
+
+	tree.prototype = {
+		init: function(){
+			var _this = this;
+			this.getUniqueNode();
+			this.drawNodes();
+			setTimeout(function(){_this.drawLines();}, 50);
+		},
+		getUniqueNode: function(){
+			var _this = this;
+			var data = this.treeData;
+			var nodes = {};
+			for(var i=0,l=data.length; i<l; i++){
+				var path = data[i];
+				var pathNodes = path.split("@");
+				this.maxLevel = Math.max(this.maxLevel, pathNodes.length);
+				for(var m=0,n=pathNodes.length; m<n; m++){
+					var hasParent =  (m-1)>=0;
+					if(typeof nodes[pathNodes[m]] != "undefined"){
+						//update level
+						if(nodes[pathNodes[m]]["level"] < m){
+							this.updateLevel(nodes, nodes[pathNodes[m]], m);
+						}
+					}else{//insert a new node
+						var tempParentLevel = hasParent?nodes[pathNodes[m-1]]["level"]:-1;
+						var temp={
+							"name":pathNodes[m],
+							"level": Math.max(m, (tempParentLevel+1)),
+							"children":[]
+						};
+						nodes[pathNodes[m]] = temp;
+					}
+
+					//find parent and insert into it's children
+					var tempParent = hasParent? nodes[pathNodes[m-1]]:false;
+					if(tempParent && jQuery.inArray(pathNodes[m], tempParent["children"]) == -1){
+						tempParent["children"].push(pathNodes[m]);
+					}
+				}
+			}
+			this.nodes = nodes;
+		},
+		updateLevel: function(nodes, node, m){
+			node["level"] = m;
+			var children = node["children"];
+			if(children.length == 0 ){return false;}
+			for(var i=0,l=children.length; i<l; i++){
+				nodes[children[i]]["level"] = m+1;
+				this.updateLevel(nodes[children[i]]["level"], m+1);
+			}
+		},
+		drawNodes: function(){
+			//generate divs
+			//todo generate divs by max count
+			// var count = Math.floor(max/2);
+			var pageInfo = forest.pageInfo;
+			var maxLevel = this.maxLevel;
+			var group = this.group;
+			var g_nodes = this.nodes;
+			var gap = Math.ceil((pageInfo.width-40)/maxLevel);
+			var str = "";
+
+			var main = document.getElementById("main");
+			var box = document.createElement("DIV");
+			box.id = "main_"+group;
+			box.className = "row-fluid";
+			box.style.height = 30*(maxLevel+3) + "px";
+			main.appendChild(box);
+
+			for(var i=0,l=maxLevel; i<=l; i++){
+				str += '<div class="gap" style="width:'+gap+'px"></div>';
+			}
+			box.innerHTML = str;
+
+			var divs = box.getElementsByTagName("DIV");
+
+			for(var key in g_nodes){
+				var nd = g_nodes[key];
+				var tempCounts = divs[nd["level"]].getElementsByTagName("INPUT").length;
+			 	var d = document.createElement("input");
+			 	// d.id=nd["name"];
+			 	d.id = [group, nd["level"], (tempCounts+1)].join(forest.idSpliter);
+			 	forest.nodeIdHash[group + forest.idSpliter +nd["name"]] = [group, nd["level"], (tempCounts+1)].join(forest.idSpliter);
+			 	d.setAttribute("data-level" ,nd["level"]);
+			 	d.setAttribute("data-x", nd["level"]);
+			 	d.setAttribute("data-y", tempCounts+1);
+			 	d.setAttribute("title", nd["name"]);
+			 	d.type="button";
+			 	d.className= "btn btn-success tov";
+			 	d.style.width = "100px";
+			 	d.value = nd["name"];
+			 	divs[nd["level"]].appendChild(d);
+			}
+		},
+		//draw line
+		drawLine:function(source, target){
+			var spo =  {"top":source[0].offsetTop, "left":source[0].offsetLeft};
+			var tpo =  {"top":target[0].offsetTop, "left":target[0].offsetLeft};
+			var t = 15;
+			var ctx = forest.ctx;
+
+			var gapY = target.attr("data-y") - source.attr("data-y");
+			var gapX = target.attr("data-x") - source.attr("data-x");
+
+			if(gapX == 0 && Math.abs(gapY) >1){
+				ctx.moveTo(spo.left+$(source).outerWidth()/2, spo.top+$(source).outerHeight()/2);
+				ctx.lineTo(spo.left+$(source).outerWidth()+t , spo.top+$(source).outerHeight()/2);
+				ctx.stroke();
+
+				ctx.moveTo(spo.left+$(source).outerWidth()+t , spo.top+$(source).outerHeight());
+				ctx.lineTo(tpo.left+$(source).outerWidth()+t , tpo.top+$(target).outerHeight()/2);
+				ctx.stroke();
+				if(gapY>0){
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()+t,  
+							tpo.top+$(target).outerHeight()/2,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top
+					);
+				}else{
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()+t,  
+							tpo.top+$(target).outerHeight()/2,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top+$(target).outerHeight()
+					);
+				}
+				
+			}else if(gapY==0 && Math.abs(gapX)>1){
+				ctx.moveTo(spo.left+$(source).outerWidth()/2, spo.top+$(source).outerHeight()/2);
+				ctx.lineTo(spo.left+$(source).outerWidth()/2 , spo.top+$(source).outerHeight()+t);
+				ctx.stroke();
+
+				ctx.moveTo(spo.left+$(source).outerWidth()/2 , spo.top+$(source).outerHeight()+t);
+				ctx.lineTo(tpo.left+$(target).outerWidth()/2 , tpo.top+$(target).outerHeight()+t);
+				ctx.stroke();
+
+				if(gapX>0){
+					canvas_arrow(ctx, 
+							tpo.left+$(target).outerWidth()/2,  
+							tpo.top+$(target).outerHeight()+t,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top+$(target).outerHeight()
+					);
+				}else{
+					canvas_arrow(ctx, 
+							tpo.left+$(target).outerWidth()/2,  
+							tpo.top+$(target).outerHeight()+t,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top+$(target).outerHeight()/2
+					);
+				}
+				
+			}else{
+				if(gapX>0){
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()/2,  
+							spo.top+$(source).outerHeight()/2,
+							tpo.left,
+							tpo.top+$(target).outerHeight()/2
+					);
+				}else if(gapX<0){
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()/2,  
+							spo.top+$(source).outerHeight()/2,
+							tpo.left+$(target).outerWidth(),
+							tpo.top+$(target).outerHeight()/2
+					);
+				}else if(gapY>0){
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()/2,  
+							spo.top+$(source).outerHeight()/2,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top
+					);
+				}else if(gapY<0){
+					canvas_arrow(ctx, 
+							spo.left+$(source).outerWidth()/2,  
+							spo.top+$(source).outerHeight()/2,
+							tpo.left+$(target).outerWidth()/2,
+							tpo.top+$(source).outerHeight()
+					);
+				}
+				
+			}
+
+			
+			ctx.stroke();
+		},
+		drawLines:function (){
+			var group = this.group;
+			var g_nodes = this.nodes;
+			for(var key in g_nodes){
+				var nowNode = g_nodes[key];
+
+				if(nowNode["children"].length ==0){continue;}
+
+				var children = nowNode["children"];
+				for(var i=0,l=children.length; i<l; i++){
+					// console.log("#"+nowNode["name"], "#"+children[i]);
+					this.drawLine($("#"+forest.nodeIdHash[group+forest.idSpliter+nowNode["name"]]), $("#"+forest.nodeIdHash[group+forest.idSpliter+children[i]]));
+				}
+			}
+		}
+	}
+
+	window.onload = function(){
+		forest.init();
+		$('#main').tooltip({"selector":"input"});
+	}
+</script>
+</body>
+</html>
