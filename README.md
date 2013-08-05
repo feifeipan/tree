@@ -24,6 +24,8 @@ A tree build of doms and canvas
 
 节点之间的关系由canvas来划线。如果在不同的水平线/纵向线上，那么就直接将两个节点中点链接起来；如果在同一个水平线上，那么需要花一个类似 |_| 这种图形。
 
+使用Ctrl+F来进行树节点的搜索，当树特别多的时候可以方便查找。
+
 数据格式
 ===
 
@@ -38,6 +40,9 @@ A tree build of doms and canvas
 
 展示
 ===
+一般的Tree
 ![Tree](https://raw.github.com/feifeipan/tree/master/1.png)
+
+有搜索功能
 ![Search Tree Nodes](https://raw.github.com/feifeipan/tree/master/2.png)
 
