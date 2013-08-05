@@ -10,7 +10,7 @@ A tree build of doms and canvas
 
 为了将复杂的关系图形化显示出来。尝试了开源的几个tree, 因为这个接口调用会有错综复杂的情况。比如C1又会再次调用B。所以一般的tree结构无法表达。
 
-准确的说，她并不是一般的tree，而是有一个更好听的名字“A force directed graph“
+准确的说，她并不是一般的tree，而是有一个更好听的名字[“force directed graph“](http://en.wikipedia.org/wiki/Force-directed_graph_drawing/)
 
 
 构思
