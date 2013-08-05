@@ -24,13 +24,13 @@ A tree build of doms and canvas
 数据格式
 ===
 
-var data = [
-  	"appid1-RTb@appid2-RTe@appid3-RTd@appid5-RTf@appid11-RTqappid11-RTqappid11-RTq",
-		"appid1-RTb@appid2.1-RTc@appid4-RTd@appid5-RTg@appid7-RTi@appid11-RTq",
-		"appid1-RTb@appid2.1-RTc@appid5-RTg@appid6-RTh@appid11-RTq",
-		"appid1-RTb@appid2.1-RTc@appid5-RTg@appid7-RTi",
-		"appid1-RTb@appid3-RTc@appid8-RTm@appid9-RTn@appid10-RTk@appid13-RTq",
-		"appid21-RTb1@appid22-RTe@appid31-RTd@appid51-RTf@appid111-RTq"
-	];
+	var data = [
+	  	"appid1-RTb@appid2-RTe@appid3-RTd@appid5-RTf@appid11-RTqappid11-RTqappid11-RTq",
+			"appid1-RTb@appid2.1-RTc@appid4-RTd@appid5-RTg@appid7-RTi@appid11-RTq",
+			"appid1-RTb@appid2.1-RTc@appid5-RTg@appid6-RTh@appid11-RTq",
+			"appid1-RTb@appid2.1-RTc@appid5-RTg@appid7-RTi",
+			"appid1-RTb@appid3-RTc@appid8-RTm@appid9-RTn@appid10-RTk@appid13-RTq",
+			"appid21-RTb1@appid22-RTe@appid31-RTd@appid51-RTf@appid111-RTq"
+		];
 
 
