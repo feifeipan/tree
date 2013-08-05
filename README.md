@@ -36,4 +36,8 @@ A tree build of doms and canvas
 			"appid21-RTb1@appid22-RTe@appid31-RTd@appid51-RTf@appid111-RTq"
 		];
 
+展示
+===
+![Tree](https://github.com/feifeipan/tree/blob/master/1.png)
+![Search Tree Nodes](https://github.com/feifeipan/tree/blob/master/2.png)
 
